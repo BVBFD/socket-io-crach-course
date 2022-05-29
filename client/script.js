@@ -6,8 +6,16 @@ const roomInput = document.getElementById('room-input');
 const form = document.getElementById('form');
 
 const socket = io('http://localhost:3000');
+const userSocket = io('http://localhost:3000/user', {
+  auth: { token: 'Test' },
+});
+
 socket.on('connect', () => {
   displayMessage(`You connected with id: ${socket.id}`);
+});
+
+userSocket.on('connect_error', (error) => {
+  displayMessage(error);
 });
 
 socket.on('receive-message', (message) => {
@@ -39,3 +47,15 @@ const displayMessage = (message) => {
   div.textContent = message;
   document.getElementById('message-container').append(div);
 };
+
+let count = 0;
+setInterval(() => {
+  socket.volatile.emit('ping', ++count);
+}, 1000);
+
+document.addEventListener('keydown', (e) => {
+  if (e.target.matches('input')) return;
+
+  if (e.key === 'c') socket.connect();
+  if (e.key === 'd') socket.disconnect();
+});
